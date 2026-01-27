@@ -1,5 +1,2 @@
-TOKEN=your_discord_token_here
-API_KEY=your_google_api_key_here
-
-TOKEN=your_second_discord_token_here
-API_KEY=your_second_google_api_key_here
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
