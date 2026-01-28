@@ -14,8 +14,8 @@ if not sys.warnoptions:
 init(autoreset=True)
 class AdvancedPredictBayBot:
     def __init__(self):
-        self.min_bet = 7000
-        self.max_bet = 9000
+        self.min_bet = 100
+        self.max_bet = 200
         self.check_interval = 10
         self.whale_threshold = 5000
         self.min_confidence = 3
