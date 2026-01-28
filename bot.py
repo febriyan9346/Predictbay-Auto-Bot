@@ -7,15 +7,17 @@ from datetime import datetime, timedelta
 import pytz
 from colorama import Fore, Style, init
 import warnings
+
 os.system('clear' if os.name == 'posix' else 'cls')
 warnings.filterwarnings('ignore')
 if not sys.warnoptions:
     os.environ["PYTHONWARNINGS"] = "ignore"
 init(autoreset=True)
+
 class AdvancedPredictBayBot:
     def __init__(self):
-        self.min_bet = 100
-        self.max_bet = 200
+        self.min_bet = 7000
+        self.max_bet = 9000
         self.check_interval = 10
         self.whale_threshold = 5000
         self.min_confidence = 3
@@ -28,12 +30,15 @@ class AdvancedPredictBayBot:
             'losses': 0,
             'skipped': 0
         }
+
     def get_wib_time(self):
         wib = pytz.timezone('Asia/Jakarta')
         return datetime.now(wib).strftime('%H:%M:%S')
+
     def get_wib_datetime(self):
         wib = pytz.timezone('Asia/Jakarta')
         return datetime.now(wib)
+
     def print_banner(self):
         banner = f"""
 {Fore.CYAN}PREDICTBAY AUTO BOT{Style.RESET_ALL}
@@ -41,6 +46,7 @@ class AdvancedPredictBayBot:
 {Fore.CYAN}============================================================{Style.RESET_ALL}
 """
         print(banner)
+
     def log(self, message, level="INFO"):
         time_str = self.get_wib_time()
         if level == "INFO":
@@ -71,9 +77,11 @@ class AdvancedPredictBayBot:
             color = Fore.WHITE
             symbol = "[LOG]"
         print(f"[{time_str}] {color}{symbol} {message}{Style.RESET_ALL}")
+
     def random_delay(self):
         delay = random.randint(1, 10)
         time.sleep(delay)
+
     def show_menu(self):
         print(f"{Fore.CYAN}============================================================{Style.RESET_ALL}")
         print(f"{Fore.CYAN}Select Mode:{Style.RESET_ALL}")
@@ -90,6 +98,7 @@ class AdvancedPredictBayBot:
             except KeyboardInterrupt:
                 print(f"\n{Fore.RED}Program terminated by user.{Style.RESET_ALL}")
                 exit(0)
+
     def countdown(self, seconds):
         for i in range(seconds, 0, -1):
             hours = i // 3600
@@ -98,11 +107,13 @@ class AdvancedPredictBayBot:
             print(f"\r[COUNTDOWN] Next cycle in: {hours:02d}:{minutes:02d}:{secs:02d} ", end="", flush=True)
             time.sleep(1)
         print("\r" + " " * 60 + "\r", end="", flush=True)
+
     def load_file(self, filename):
         if not os.path.exists(filename):
             return []
         with open(filename, 'r') as file:
             return [line.strip() for line in file if line.strip()]
+
     def get_headers(self, token, is_post=False):
         headers = {
             "accept": "application/json, text/plain, */*",
@@ -117,6 +128,7 @@ class AdvancedPredictBayBot:
             headers["content-type"] = "application/json"
             headers["origin"] = "https://predictbay.io"
         return headers
+
     def get_live_price(self, proxy=None):
         now = int(time.time())
         url = f"https://benchmarks.pyth.network/v1/shims/tradingview/history?symbol=Crypto.BTC%2FUSD&resolution=1&from={now-300}&to={now}"
@@ -130,6 +142,7 @@ class AdvancedPredictBayBot:
         except:
             pass
         return None
+
     def get_active_market(self, token, proxy=None):
         url = "https://api.predictbay.io/api/v1/markets/simple-mode/1?frequency=10m"
         proxies = {"http": proxy, "https": proxy} if proxy else {}
@@ -140,6 +153,7 @@ class AdvancedPredictBayBot:
         except:
             pass
         return None
+
     def get_live_bets(self, token, market_id, proxy=None):
         """Fetch live bets data for whale tracking and sentiment analysis"""
         url = f"https://api.predictbay.io/api/v1/markets/{market_id}/bets/live?limit=80"
@@ -151,6 +165,7 @@ class AdvancedPredictBayBot:
         except:
             pass
         return None
+
     def get_balance(self, token, proxy=None):
         url = "https://api.predictbay.io/api/v1/users/profile"
         proxies = {"http": proxy, "https": proxy} if proxy else {}
@@ -160,6 +175,7 @@ class AdvancedPredictBayBot:
                 return float(res.json()["data"]["balance"]["available"])
         except:
             return 0.0
+
     def place_trade(self, token, market_id, side, amount, proxy=None):
         url = f"https://api.predictbay.io/api/v1/markets/{market_id}/trades"
         payload = {"side": side, "amount": amount}
@@ -169,6 +185,7 @@ class AdvancedPredictBayBot:
             return res.json()
         except:
             return None
+
     def claim_quest(self, token, quest_id, proxy=None):
         url = f"https://api.predictbay.io/api/v1/quests/{quest_id}/claim"
         proxies = {"http": proxy, "https": proxy} if proxy else {}
@@ -186,6 +203,7 @@ class AdvancedPredictBayBot:
         except:
             pass
         return "error"
+
     def analyze_whale_activity(self, bets):
         """Analyze whale betting patterns"""
         if not bets:
@@ -207,6 +225,7 @@ class AdvancedPredictBayBot:
             return {"whale_signal": "below", "whale_confidence": 1, "whale_volume": whale_below}
         else:
             return {"whale_signal": None, "whale_confidence": 0}
+
     def analyze_momentum(self, bets):
         """Analyze recent betting momentum"""
         if not bets or len(bets) < 10:
@@ -225,6 +244,7 @@ class AdvancedPredictBayBot:
             return {"momentum_signal": "below", "momentum_confidence": 1}
         else:
             return {"momentum_signal": None, "momentum_confidence": 0}
+
     def analyze_contrarian(self, totals, pool):
         """Apply contrarian strategy when market is too lopsided"""
         if totals['above'] == 0 or totals['below'] == 0:
@@ -242,6 +262,7 @@ class AdvancedPredictBayBot:
             return {"contrarian_signal": "below", "contrarian_confidence": 1}
         else:
             return {"contrarian_signal": None, "contrarian_confidence": 0}
+
     def analyze_multiplier_value(self, pool):
         """Check if multiplier provides good value"""
         above_mult = pool['aboveMultiplier']
@@ -252,6 +273,7 @@ class AdvancedPredictBayBot:
             return {"value_signal": "below", "value_confidence": 1}
         else:
             return {"value_signal": None, "value_confidence": 0}
+
     def advanced_analysis(self, market_info, live_price, bets_data, pool_data):
         """
         Comprehensive multi-factor analysis
@@ -338,6 +360,7 @@ class AdvancedPredictBayBot:
             'reasons': reasons,
             'price_diff': price_diff
         }
+
     def calculate_dynamic_bet_size(self, balance, confidence, pool_data, signal):
         """Calculate bet size based on confidence and risk/reward"""
         multiplier = pool_data['aboveMultiplier'] if signal == 'above' else pool_data['belowMultiplier']
@@ -352,6 +375,7 @@ class AdvancedPredictBayBot:
             base_bet = base_bet * 0.8
         final_bet = max(self.min_bet, min(int(base_bet), self.max_bet, int(balance)))
         return final_bet
+
     def run(self):
         self.print_banner()
         choice = self.show_menu()
@@ -359,7 +383,7 @@ class AdvancedPredictBayBot:
         tokens = self.load_file("accounts.txt")
         proxies = self.load_file("proxy.txt")
         if not tokens:
-            self.log("File accounts.txt not foundor empty!", "ERROR")
+            self.log("File accounts.txt not found or empty!", "ERROR")
             return
         self.log(f"Loaded {len(tokens)} accounts successfully", "INFO")
         for token in tokens:
@@ -389,16 +413,27 @@ class AdvancedPredictBayBot:
             market_id = market_info["id"]
             pool_data = active_market["data"]["pool"]
             self.log(f"Market: {market_info['title'][:50]}...", "INFO")
-            self.log(f"Open Price: ${float(market_info['openPrice']):,.2f} | Live: ${live_price:,.2f}", "INFO")
+            
+            # ROBUST FIX: Handle None live_price safely
+            open_price = float(market_info.get('openPrice', 0))
+            if live_price is not None:
+                self.log(f"Open Price: ${open_price:,.2f} | Live: ${live_price:,.2f}", "INFO")
+            else:
+                self.log(f"Open Price: ${open_price:,.2f} | Live: N/A (Price feed unavailable)", "WARNING")
+            
             bets_data = self.get_live_bets(tokens[0], market_id, main_proxy)
+            
+            # FIX: Initialize signal and confidence before the if block
+            signal = None
+            confidence = 0
+            
             if live_price and bets_data:
                 analysis = self.advanced_analysis(market_info, live_price, bets_data.get("data"), pool_data)
                 signal = analysis['signal']
                 confidence = analysis['confidence']
             else:
                 self.log("Insufficient data for analysis, skipping...", "WARNING")
-                signal = None
-                confidence = 0
+            
             if signal:
                 print(f"{Fore.CYAN}------------------------------------------------------------{Style.RESET_ALL}")
                 success_count = 0
@@ -448,6 +483,7 @@ class AdvancedPredictBayBot:
                 print(f"{Fore.CYAN}============================================================{Style.RESET_ALL}\n")
             cycle += 1
             self.countdown(self.check_interval)
+
 if __name__ == "__main__":
     bot = AdvancedPredictBayBot()
     bot.run()
