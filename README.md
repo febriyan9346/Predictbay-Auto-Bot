@@ -54,7 +54,7 @@ http://user:pass@host:port
 
 Run the bot:
 ```bash
-python bott.py
+python bot.py
 ```
 
 Select your preferred mode:
